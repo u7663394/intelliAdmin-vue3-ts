@@ -1,12 +1,6 @@
-<script setup lang="ts">
-import { Edit } from '@element-plus/icons-vue'
-import { RouterView } from 'vue-router'
-</script>
+<script setup lang="ts"></script>
 
 <template>
-  <div>我是App</div>
-  <el-button round plain type="primary" :icon="Edit">按钮</el-button>
+  <!-- 一级路由出口 -->
   <router-view></router-view>
 </template>
-
-<style scoped></style>
