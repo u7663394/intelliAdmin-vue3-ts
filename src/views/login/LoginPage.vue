@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { loginAPI } from '@/apis/user'
+import { FORMDATA_KEY } from '@/constants'
 import { useUserStore } from '@/stores/user'
-import { setLocalToken } from '@/utils/auth'
 import { ElMessage, type FormInstance } from 'element-plus'
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 /**
@@ -12,7 +12,7 @@ import { useRouter } from 'vue-router'
 const formData = ref({
   username: 'demo',
   password: 'Hmzs%001',
-  remember: true,
+  remember: false,
 })
 
 const rules = {
@@ -20,12 +20,20 @@ const rules = {
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
 }
 
+onMounted(() => {
+  const localFormData = localStorage.getItem(FORMDATA_KEY)
+  if (localFormData) {
+    formData.value = JSON.parse(localFormData)
+  }
+})
+
 /**
  * 登录逻辑
  *   1. 校验表单
  *   2. 调用登录接口
  *   3. 成功后保存 token
- *   4. 跳转到首页
+ *   4. 判断是否记住我
+ *   5. 跳转到首页
  */
 const form = ref<FormInstance>()
 const userStore = useUserStore()
@@ -41,7 +49,13 @@ const onLogin = async () => {
   ElMessage.success('登录成功')
   // 3. 成功后保存 token
   userStore.setToken(res.data.token)
-  // 4. 跳转到首页
+  // 4. 判断是否记住我
+  if (formData.value.remember) {
+    localStorage.setItem(FORMDATA_KEY, JSON.stringify(formData.value))
+  } else {
+    localStorage.removeItem(FORMDATA_KEY)
+  }
+  // 5. 跳转到首页
   router.push('/')
 }
 </script>
