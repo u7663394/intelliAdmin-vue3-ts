@@ -1,5 +1,8 @@
 import axios, { type Method } from 'axios'
-import { getLocalToken } from './auth'
+import { getLocalToken, removeLocalToken } from './auth'
+import { ElMessage } from 'element-plus'
+import { useUserStore } from '@/stores/user'
+import router from '@/router'
 
 const instance = axios.create({
   baseURL: 'https://api-hmzs.itheima.net/tj',
@@ -15,6 +18,7 @@ instance.interceptors.request.use(
     return config
   },
   (error) => {
+    ElMessage.error(error.response.data.msg)
     return Promise.reject(error)
   },
 )
@@ -24,6 +28,18 @@ instance.interceptors.response.use(
     return response.data
   },
   (error) => {
+    if (error.response.status === 401) {
+      // 1. 清空用户数据
+      const userStore = useUserStore()
+      userStore.setToken('')
+      removeLocalToken()
+      // 2. 跳转到登录
+      router.push('/login')
+      // 3. 提示
+      ElMessage.error('登录状态无效，请重新登录')
+    } else {
+      ElMessage.error(error.response.data.msg)
+    }
     return Promise.reject(error)
   },
 )
