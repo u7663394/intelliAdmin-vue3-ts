@@ -1,5 +1,8 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
+import NProgress from 'nprogress'
+import 'nprogress/nprogress.css'
+import '@/styles/progress.scss'
 
 export const routes: RouteRecordRaw[] = [
   {
@@ -131,6 +134,26 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   scrollBehavior: () => ({ top: 0 }),
   routes,
+})
+
+NProgress.configure({
+  showSpinner: false,
+})
+
+router.beforeEach(() => {
+  NProgress.start()
+})
+
+/**
+ * 路由后置守卫:
+ *   1. 页面标题设置
+ *   2. 组件加载进度条
+ */
+router.afterEach((to) => {
+  // 1. 页面标题设置
+  document.title = to.meta.title ? `intelliAdmin-${to.meta.title}` : 'intelliAdmin'
+  // 2. 组件加载进度条
+  NProgress.done()
 })
 
 export default router
