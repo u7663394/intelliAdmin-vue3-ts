@@ -1,4 +1,5 @@
 import axios, { type Method } from 'axios'
+import { getLocalToken } from './auth'
 
 const instance = axios.create({
   baseURL: 'https://api-hmzs.itheima.net/tj',
@@ -7,6 +8,10 @@ const instance = axios.create({
 
 instance.interceptors.request.use(
   (config) => {
+    const token = getLocalToken()
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
     return config
   },
   (error) => {

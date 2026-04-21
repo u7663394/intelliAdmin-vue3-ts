@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { loginAPI } from '@/apis/user'
 import { useUserStore } from '@/stores/user'
+import { setLocalToken } from '@/utils/auth'
 import { ElMessage, type FormInstance } from 'element-plus'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'

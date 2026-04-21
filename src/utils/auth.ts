@@ -1,13 +1,16 @@
+// 封装操作 cookie 的方法包
 import { TOKEN_KEY } from '@/constants'
+import Cookies from 'js-cookie'
 
-export const getToken = () => {
-  return localStorage.getItem(TOKEN_KEY)
+export const getLocalToken = () => {
+  return Cookies.get(TOKEN_KEY)
 }
 
-export const setToken = (token: string) => {
-  localStorage.setItem(TOKEN_KEY, token)
+// expires: 7 表示 7 天后过期
+export const setLocalToken = (token: string) => {
+  Cookies.set(TOKEN_KEY, token, { expires: 7 })
 }
 
-export const removeToken = () => {
-  localStorage.removeItem(TOKEN_KEY)
+export const removeLocalToken = () => {
+  Cookies.remove(TOKEN_KEY)
 }
