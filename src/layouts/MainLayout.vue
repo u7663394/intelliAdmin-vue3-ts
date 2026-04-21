@@ -10,6 +10,7 @@ import SliderBar from './components/SliderBar.vue'
       <NavBar></NavBar>
       <div class="main-wrapper">
         <div class="main-content">
+          <!-- 二级路由 -->
           <RouterView v-slot="{ Component }">
             <Transition name="fade-transform" mode="out-in">
               <component :key="$route.path" :is="Component" />

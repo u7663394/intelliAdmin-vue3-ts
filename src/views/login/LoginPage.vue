@@ -1,25 +1,70 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { loginAPI } from '@/apis/user'
+import { useUserStore } from '@/stores/user'
+import { ElMessage, type FormInstance } from 'element-plus'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+/**
+ * 表单数据 + 校验规则
+ */
+const formData = ref({
+  username: 'demo',
+  password: 'Hmzs%001',
+  remember: true,
+})
+
+const rules = {
+  username: [{ required: true, message: '请输入账号', trigger: 'blur' }],
+  password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+}
+
+/**
+ * 登录逻辑
+ *   1. 校验表单
+ *   2. 调用登录接口
+ *   3. 成功后保存 token
+ *   4. 跳转到首页
+ */
+const form = ref<FormInstance>()
+const userStore = useUserStore()
+const router = useRouter()
+const onLogin = async () => {
+  // 1. 校验表单
+  await form.value!.validate()
+  // 2. 调用登录接口
+  const res = await loginAPI({
+    username: formData.value.username,
+    password: formData.value.password,
+  })
+  ElMessage.success('登录成功')
+  // 3. 成功后保存 token
+  userStore.setToken(res.data.token)
+  // 4. 跳转到首页
+  router.push('/')
+}
+</script>
 
 <template>
   <div class="login_body">
     <div class="bg" />
     <div class="box">
       <div class="title">智慧园区-登录</div>
-      <el-form ref="form">
+      <el-form ref="form" :model="formData" :rules="rules">
         <el-form-item label="账号" prop="username">
-          <el-input />
+          <el-input v-model="formData.username" />
         </el-form-item>
 
         <el-form-item label="密码" prop="password">
-          <el-input />
+          <el-input show-password v-model="formData.password" type="password" />
         </el-form-item>
 
         <el-form-item prop="remember">
-          <el-checkbox>记住我</el-checkbox>
+          <el-checkbox v-model="formData.remember">记住我</el-checkbox>
         </el-form-item>
 
         <el-form-item>
-          <el-button type="primary" class="login_btn">登录</el-button>
+          <el-button type="primary" class="login_btn" @click="onLogin">登录</el-button>
         </el-form-item>
       </el-form>
     </div>

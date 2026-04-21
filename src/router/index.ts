@@ -45,7 +45,6 @@ export const routes: RouteRecordRaw[] = [
       },
     ],
   },
-
   {
     path: '/parking',
     component: MainLayout,

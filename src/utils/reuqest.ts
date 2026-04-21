@@ -1,11 +1,11 @@
-import axios from 'axios'
+import axios, { type Method } from 'axios'
 
-const service = axios.create({
-  baseURL: 'https://api-hmzs.itheima.net/api',
-  timeout: 12000,
+const instance = axios.create({
+  baseURL: 'https://api-hmzs.itheima.net/tj',
+  timeout: 15000,
 })
 
-service.interceptors.request.use(
+instance.interceptors.request.use(
   (config) => {
     return config
   },
@@ -14,7 +14,7 @@ service.interceptors.request.use(
   },
 )
 
-service.interceptors.response.use(
+instance.interceptors.response.use(
   (response) => {
     return response.data
   },
@@ -23,4 +23,35 @@ service.interceptors.response.use(
   },
 )
 
-export default service
+export default instance
+
+/**
+ * 封装请求函数, 便于 api 中的调用
+ *
+ * 说明：
+ *   1. request<T = any, R = AxiosResponse<T>>
+ *      T：响应体 response.data 的类型
+ *      R：整个返回值类型（默认是 AxiosResponse<T>）
+ *   2. 以前 axios 默认返回的是完整响应对象：
+ *      res = { data: { name: string }, status: number, ... }
+ *   3. 现在在响应拦截器中，直接返回 res.data
+ *   4. 后端的通用返回结构：{ code, message, data }
+ *      可以抽取一个通用类型 Data<T>
+ */
+type Data<T> = {
+  code: number
+  message: string
+  data: T
+}
+
+const request = <T>(url: string, method: Method = 'GET', submitData?: object) => {
+  const config: any = { url, method }
+  if (method.toUpperCase() === 'GET') {
+    config.params = submitData
+  } else {
+    config.data = submitData
+  }
+  return instance.request<T, Data<T>>(config)
+}
+
+export { request }
