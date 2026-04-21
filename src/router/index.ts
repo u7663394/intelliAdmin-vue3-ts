@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
-
 import MainLayout from '@/layouts/MainLayout.vue'
 
 export const routes: RouteRecordRaw[] = [
