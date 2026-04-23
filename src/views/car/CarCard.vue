@@ -1,4 +1,29 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { getCardListAPI } from '@/apis/card'
+import type { Card, CardListParams } from '@/types/card'
+import { lo } from 'element-plus/es/locale/index.mjs'
+import { ref } from 'vue'
+
+/**
+ * 获取月卡列表数据并渲染
+ */
+const params = ref<CardListParams>({
+  page: 1,
+  pageSize: 10,
+})
+
+const loading = ref(false)
+const cardList = ref<Card[]>([])
+const total = ref(0)
+const getCardList = async () => {
+  loading.value = true
+  const res = await getCardListAPI(params.value)
+  cardList.value = res.data.rows
+  total.value = res.data.total
+  loading.value = false
+}
+getCardList()
+</script>
 
 <template>
   <div class="card-container">
@@ -21,15 +46,15 @@
     </div>
     <!-- 表格区域 -->
     <div class="table">
-      <el-table style="width: 100%" :data="[]">
-        <el-table-column type="index" label="序号" width="100" />
-        <el-table-column label="车主名称" />
-        <el-table-column label="联系方式" />
-        <el-table-column label="车牌号码" />
-        <el-table-column label="车辆品牌" />
-        <el-table-column label="剩余有效天数" />
-        <el-table-column label="操作" fixed="right" width="180">
-          <template>
+      <el-table v-loading="loading" style="width: 100%" :data="cardList">
+        <el-table-column type="index" label="序号" width="100" align="center" />
+        <el-table-column label="车主名称" prop="personName" align="center" />
+        <el-table-column label="联系方式" prop="phoneNumber" align="center" />
+        <el-table-column label="车牌号码" prop="carNumber" align="center" />
+        <el-table-column label="车辆品牌" prop="carBrand" align="center" />
+        <el-table-column label="剩余有效天数" prop="totalEffectiveDate" align="center" />
+        <el-table-column label="操作" fixed="right" width="300" align="center">
+          <template #default="scope">
             <el-button size="small" type="text">续费</el-button>
             <el-button size="small" type="text">查看</el-button>
             <el-button size="small" type="text">编辑</el-button>
