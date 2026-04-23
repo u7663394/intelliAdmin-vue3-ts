@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { getCardListAPI } from '@/apis/card'
+import { delCardAPI, getCardListAPI } from '@/apis/card'
 import type { Card, CardListParams } from '@/types/card'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -79,6 +80,20 @@ const router = useRouter()
 const editCard = (id: string) => {
   router.push(`/cardAdd?id=${id}`)
 }
+
+/**
+ * 删除功能
+ */
+const delCard = async (id: string) => {
+  await ElMessageBox.confirm('此操作将删除该月卡, 是否继续?', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+  await delCardAPI(id)
+  getCardList()
+  ElMessage.success('删除成功!')
+}
 </script>
 
 <template>
@@ -126,7 +141,7 @@ const editCard = (id: string) => {
             <el-button size="small" type="text">续费</el-button>
             <el-button size="small" type="text">查看</el-button>
             <el-button size="small" type="text" @click="editCard(scope.row.id)">编辑</el-button>
-            <el-button size="small" type="text">删除</el-button>
+            <el-button size="small" type="text" @click="delCard(scope.row.id)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>

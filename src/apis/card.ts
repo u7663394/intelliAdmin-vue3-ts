@@ -20,3 +20,8 @@ export const getCardDetailAPI = (id: string) => {
 export const updateCardAPI = (data: CardParms) => {
   return request('/parking/card/edit', 'PUT', data)
 }
+
+// 删除月卡
+export const delCardAPI = (id: string) => {
+  return request(`/parking/card/${id}`, 'DELETE')
+}
