@@ -126,7 +126,7 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/cardAdd',
     component: () => import('@/views/car/AddCard.vue'),
-    meta: { hidden: true, title: '添加月卡' },
+    meta: { hidden: true, title: '月卡管理' },
   },
   {
     path: '/:pathMatch(.*)*',

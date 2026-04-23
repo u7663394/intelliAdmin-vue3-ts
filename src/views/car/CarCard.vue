@@ -2,6 +2,7 @@
 import { getCardListAPI } from '@/apis/card'
 import type { Card, CardListParams } from '@/types/card'
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 /**
  * 获取月卡列表数据并渲染
@@ -70,6 +71,14 @@ const onReset = () => {
   }
   getCardList()
 }
+
+/**
+ * 编辑功能: 跳转传递 id 参数
+ */
+const router = useRouter()
+const editCard = (id: string) => {
+  router.push(`/cardAdd?id=${id}`)
+}
 </script>
 
 <template>
@@ -116,7 +125,7 @@ const onReset = () => {
           <template #default="scope">
             <el-button size="small" type="text">续费</el-button>
             <el-button size="small" type="text">查看</el-button>
-            <el-button size="small" type="text">编辑</el-button>
+            <el-button size="small" type="text" @click="editCard(scope.row.id)">编辑</el-button>
             <el-button size="small" type="text">删除</el-button>
           </template>
         </el-table-column>

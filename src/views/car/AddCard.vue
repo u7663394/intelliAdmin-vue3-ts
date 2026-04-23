@@ -1,11 +1,10 @@
 <script lang="ts" setup>
-import { createCardAPI } from '@/apis/card'
+import { createCardAPI, getCardDetailAPI, updateCardAPI } from '@/apis/card'
 import type { CardParms } from '@/types/card'
 import { validateCarNumber } from '@/utils/validate'
 import { ElMessage, ElMessageBox, type FormRules } from 'element-plus'
-import { lo } from 'element-plus/es/locale/index.mjs'
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 /**
  * 车辆信息表单
@@ -37,7 +36,7 @@ const carInfoRules = ref<FormRules<CardParms>>({
  *   1. 表单数据绑定
  *   2. 校验
  */
-const feeForm = ref({
+const feeForm = ref<any>({
   payTime: [],
   paymentAmount: undefined,
   paymentMethod: undefined,
@@ -81,10 +80,20 @@ const onConfirm = async () => {
     cardStartDate: feeForm.value.payTime[0],
     cardEndDate: feeForm.value.payTime[1],
   }
-  loading.value = true
-  await createCardAPI(payload)
-  loading.value = false
-  ElMessage.success('添加月卡成功')
+  if (id.value) {
+    // 编辑
+    payload.rechargeId = feeForm.value.rechargeId
+    editLoading.value = true
+    await updateCardAPI(payload)
+    editLoading.value = false
+    ElMessage.success('编辑月卡成功')
+  } else {
+    // 新增
+    loading.value = true
+    await createCardAPI(payload)
+    loading.value = false
+    ElMessage.success('添加月卡成功')
+  }
   router.back()
 }
 
@@ -103,17 +112,54 @@ const onReset = async () => {
   carInfoFormRef.value.resetFields()
   feeFormRef.value.resetFields()
 }
+
+/**
+ * 编辑回显
+ */
+const editLoading = ref(false)
+const route = useRoute()
+const id = computed(() => {
+  return route.query.id as string
+})
+
+const getDetail = async () => {
+  editLoading.value = true
+  const res = await getCardDetailAPI(id.value)
+  editLoading.value = false
+  // 回显车辆信息表单
+  const { carInfoId, personName, phoneNumber, carNumber, carBrand } = res.data
+  carInfoForm.value = {
+    personName,
+    phoneNumber,
+    carNumber,
+    carBrand,
+    carInfoId,
+  }
+
+  // 回显缴费信息表单
+  const { rechargeId, cardStartDate, cardEndDate, paymentAmount, paymentMethod } = res.data
+  feeForm.value = {
+    rechargeId,
+    paymentAmount,
+    paymentMethod,
+    payTime: [cardStartDate, cardEndDate],
+  }
+}
+
+onMounted(() => {
+  if (id.value) getDetail()
+})
 </script>
 
 <template>
-  <div class="add-card">
+  <div class="add-card" v-loading="editLoading">
     <header class="add-header">
       <!-- 
        header 组件: 
          1. content: 标题
          2. @back: 点击返回按钮的回调函数
       -->
-      <el-page-header content="添加月卡" @back="$router.back()" />
+      <el-page-header :content="id ? '编辑月卡' : '添加月卡'" @back="$router.back()" />
     </header>
     <main class="add-main">
       <div class="form-container">

@@ -34,4 +34,21 @@ export interface CardParms {
   paymentMethod?: 'Alipay' | 'WeChat' | 'Cash'
   personName?: string
   phoneNumber?: string
+  carInfoId?: number
+  rechargeId?: number
+}
+
+// 月卡详情
+export interface CardDetail {
+  carBrand: string
+  cardEndDate: string
+  cardStartDate: string
+  cardStatus: number
+  carInfoId: number
+  carNumber: string
+  paymentAmount: number
+  paymentMethod: 'Alipay' | 'WeChat' | 'Cash'
+  personName: string
+  phoneNumber: string
+  rechargeId: number
 }
