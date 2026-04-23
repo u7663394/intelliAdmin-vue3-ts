@@ -9,6 +9,9 @@ import { ref } from 'vue'
 const params = ref<CardListParams>({
   page: 1,
   pageSize: 5,
+  carNumber: '',
+  personName: '',
+  cardStatus: '',
 })
 
 const loading = ref(false)
@@ -39,6 +42,20 @@ const sizeChange = (newSize: number) => {
   params.value.pageSize = newSize
   getCardList()
 }
+
+/**
+ * 搜索功能
+ */
+const cardStatusList = [
+  { id: -1, name: '全部' },
+  { id: 0, name: '可用' },
+  { id: 1, name: '已过期' },
+]
+
+const onSearch = () => {
+  params.value.page = 1
+  getCardList()
+}
 </script>
 
 <template>
@@ -46,14 +63,24 @@ const sizeChange = (newSize: number) => {
     <!-- 搜索区域 -->
     <div class="search-container">
       <span class="search-label">车牌号码：</span>
-      <el-input clearable placeholder="请输入内容" class="search-main" />
+      <el-input v-model="params.carNumber" clearable placeholder="请输入内容" class="search-main" />
       <span class="search-label">车主姓名：</span>
-      <el-input clearable placeholder="请输入内容" class="search-main" />
+      <el-input
+        v-model="params.personName"
+        clearable
+        placeholder="请输入内容"
+        class="search-main"
+      />
       <span class="search-label">状态：</span>
-      <el-select style="width: 240px">
-        <el-option label="全部" value="1" />
+      <el-select v-model="params.cardStatus" style="width: 240px">
+        <el-option
+          v-for="item in cardStatusList"
+          :key="item.id"
+          :value="item.id!"
+          :label="item.name"
+        />
       </el-select>
-      <el-button type="primary" class="search-btn">查询</el-button>
+      <el-button type="primary" class="search-btn" @click="onSearch">查询</el-button>
     </div>
     <!-- 新增删除操作区域 -->
     <div class="create-container">
