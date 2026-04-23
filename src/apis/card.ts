@@ -25,3 +25,8 @@ export const updateCardAPI = (data: CardParms) => {
 export const delCardAPI = (id: string) => {
   return request(`/parking/card/${id}`, 'DELETE')
 }
+
+// 批量删除月卡
+export const delAllCardAPI = (ids: number[]) => {
+  return request(`/parking/card/${ids.join(',')}`, 'DELETE')
+}

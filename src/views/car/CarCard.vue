@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { delCardAPI, getCardListAPI } from '@/apis/card'
+import { delAllCardAPI, delCardAPI, getCardListAPI } from '@/apis/card'
 import type { Card, CardListParams } from '@/types/card'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ref } from 'vue'
@@ -94,6 +94,29 @@ const delCard = async (id: string) => {
   getCardList()
   ElMessage.success('删除成功!')
 }
+
+/**
+ * 批量删除功能
+ */
+const selectedCarList = ref<Card[]>([])
+const handleSelectionChange = (rowList: Card[]) => {
+  selectedCarList.value = rowList
+}
+
+const delCardList = async () => {
+  if (selectedCarList.value.length === 0) {
+    return ElMessage.warning('请至少选择一项进行删除!')
+  }
+  await ElMessageBox.confirm('此操作将删除选中的月卡, 是否继续?', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+  const ids = selectedCarList.value.map((ele) => ele.id)
+  await delAllCardAPI(ids)
+  await getCardList()
+  ElMessage.success('批量删除成功!')
+}
 </script>
 
 <template>
@@ -124,11 +147,17 @@ const delCard = async (id: string) => {
     <!-- 新增删除操作区域 -->
     <div class="create-container">
       <el-button type="primary" @click="$router.push('/cardAdd')">添加月卡</el-button>
-      <el-button>批量删除</el-button>
+      <el-button @click="delCardList">批量删除</el-button>
     </div>
     <!-- 表格区域 -->
     <div class="table">
-      <el-table v-loading="loading" style="width: 100%" :data="cardList">
+      <el-table
+        v-loading="loading"
+        style="width: 100%"
+        :data="cardList"
+        @selection-change="handleSelectionChange"
+      >
+        <el-table-column type="selection" width="55" />
         <el-table-column type="index" label="序号" width="100" align="center" />
         <el-table-column label="车主名称" prop="personName" align="center" />
         <el-table-column label="联系方式" prop="phoneNumber" align="center" />
