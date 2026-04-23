@@ -56,6 +56,20 @@ const onSearch = () => {
   params.value.page = 1
   getCardList()
 }
+
+/**
+ * 重置功能
+ */
+const onReset = () => {
+  params.value = {
+    page: 1,
+    pageSize: 5,
+    carNumber: '',
+    personName: '',
+    cardStatus: '',
+  }
+  getCardList()
+}
 </script>
 
 <template>
@@ -81,10 +95,11 @@ const onSearch = () => {
         />
       </el-select>
       <el-button type="primary" class="search-btn" @click="onSearch">查询</el-button>
+      <el-button type="danger" class="search-btn" @click="onReset">重置</el-button>
     </div>
     <!-- 新增删除操作区域 -->
     <div class="create-container">
-      <el-button type="primary">添加月卡</el-button>
+      <el-button type="primary" @click="$router.push('/cardAdd')">添加月卡</el-button>
       <el-button>批量删除</el-button>
     </div>
     <!-- 表格区域 -->

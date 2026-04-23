@@ -128,6 +128,11 @@ export const routes: RouteRecordRaw[] = [
     component: () => import('@/views/NotFound.vue'),
     meta: { hidden: true },
   },
+  {
+    path: '/cardAdd',
+    component: () => import('@/views/car/AddCard.vue'),
+    meta: { hidden: true },
+  },
 ]
 
 const router = createRouter({
