@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { getCardListAPI } from '@/apis/card'
 import type { Card, CardListParams } from '@/types/card'
-import { lo } from 'element-plus/es/locale/index.mjs'
 import { ref } from 'vue'
 
 /**
@@ -9,7 +8,7 @@ import { ref } from 'vue'
  */
 const params = ref<CardListParams>({
   page: 1,
-  pageSize: 10,
+  pageSize: 5,
 })
 
 const loading = ref(false)
@@ -23,6 +22,23 @@ const getCardList = async () => {
   loading.value = false
 }
 getCardList()
+
+const formatStatus = (row: Card) => {
+  return row.cardStatus === 0 ? '可用' : '已过期'
+}
+
+/**
+ * 分页
+ */
+const pageChange = (newPage: number) => {
+  params.value.page = newPage
+  getCardList()
+}
+
+const sizeChange = (newSize: number) => {
+  params.value.pageSize = newSize
+  getCardList()
+}
 </script>
 
 <template>
@@ -53,6 +69,7 @@ getCardList()
         <el-table-column label="车牌号码" prop="carNumber" align="center" />
         <el-table-column label="车辆品牌" prop="carBrand" align="center" />
         <el-table-column label="剩余有效天数" prop="totalEffectiveDate" align="center" />
+        <el-table-column label="状态" prop="cardStatus" align="center" :formatter="formatStatus" />
         <el-table-column label="操作" fixed="right" width="300" align="center">
           <template #default="scope">
             <el-button size="small" type="text">续费</el-button>
@@ -65,7 +82,16 @@ getCardList()
     </div>
     <!-- 分页 -->
     <div class="page-container">
-      <el-pagination style="float: right" layout="total, prev, pager, next" :total="0" />
+      <el-pagination
+        style="float: right; margin-top: 10px"
+        v-model:current-page="params.page"
+        v-model:page-size="params.pageSize"
+        :page-sizes="[2, 5, 10, 20]"
+        layout="total, prev, pager, next,  sizes"
+        :total="total"
+        @current-change="pageChange"
+        @size-change="sizeChange"
+      />
     </div>
   </div>
 </template>
