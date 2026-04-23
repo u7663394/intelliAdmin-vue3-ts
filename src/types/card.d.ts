@@ -23,3 +23,15 @@ export interface Card {
   phoneNumber: string
   totalEffectiveDate: number
 }
+
+// 添加月卡参数
+export interface CardParms {
+  carBrand?: string
+  cardEndDate?: string
+  cardStartDate?: string
+  carNumber?: string
+  paymentAmount?: string
+  paymentMethod?: 'Alipay' | 'WeChat' | 'Cash'
+  personName?: string
+  phoneNumber?: string
+}

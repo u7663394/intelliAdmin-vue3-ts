@@ -124,13 +124,13 @@ export const routes: RouteRecordRaw[] = [
     ],
   },
   {
-    path: '/:pathMatch(.*)*',
-    component: () => import('@/views/NotFound.vue'),
-    meta: { hidden: true },
-  },
-  {
     path: '/cardAdd',
     component: () => import('@/views/car/AddCard.vue'),
+    meta: { hidden: true, title: '添加月卡' },
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    component: () => import('@/views/NotFound.vue'),
     meta: { hidden: true },
   },
 ]
