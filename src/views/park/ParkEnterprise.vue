@@ -6,6 +6,7 @@ import { ref } from 'vue'
 /**
  * 获取企业列表并渲染
  */
+const total = ref(0)
 const exterpriseList = ref<Enterprise[]>([])
 const params = ref<EnterpriseListParams>({
   page: 1,
@@ -15,8 +16,28 @@ const params = ref<EnterpriseListParams>({
 const getExterpriseList = async () => {
   const res = await getEnterpriseListAPI(params.value)
   exterpriseList.value = res.data?.rows
+  total.value = res.data?.total
 }
 getExterpriseList()
+
+/**
+ * 联系电话脱敏
+ */
+const formatContactNumber = (row: any) => {
+  const contactNumber = row.contactNumber
+  if (contactNumber.length === 11) {
+    return contactNumber.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2')
+  }
+  return contactNumber
+}
+
+/**
+ * 分页事件
+ */
+const pageChange = (newPage: number) => {
+  params.value.page = newPage
+  getExterpriseList()
+}
 </script>
 
 <template>
@@ -36,7 +57,12 @@ getExterpriseList()
         <el-table-column align="center" type="index" label="序号" width="120" />
         <el-table-column align="center" label="企业名称" width="320" prop="name" />
         <el-table-column align="center" label="联系人" prop="contact" />
-        <el-table-column align="center" label="联系电话" prop="contactNumber" />
+        <el-table-column
+          align="center"
+          label="联系电话"
+          prop="contactNumber"
+          :formatter="formatContactNumber"
+        />
         <el-table-column align="center" label="操作" width="350">
           <template #default="scope">
             <el-button size="small" type="text">添加合同</el-button>
@@ -47,8 +73,13 @@ getExterpriseList()
         </el-table-column>
       </el-table>
     </div>
-    <div class="page-container">
-      <el-pagination layout="total, prev, pager, next" />
+    <div class="page-container" style="float: right">
+      <el-pagination
+        layout="total, prev, pager, next"
+        :total="total"
+        :page-size="params.pageSize"
+        @current-change="pageChange"
+      />
     </div>
   </div>
 </template>
