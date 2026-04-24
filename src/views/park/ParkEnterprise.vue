@@ -67,7 +67,7 @@ const onSearch = async () => {
       <el-button :loading="searchLoading" type="primary" @click="onSearch">查询</el-button>
     </div>
     <div class="create-container">
-      <el-button type="primary">添加企业</el-button>
+      <el-button type="primary" @click="$router.push('/enterpriseAdd')">添加企业</el-button>
     </div>
     <!-- 表格区域 -->
     <div class="table" v-loading="searchLoading">
