@@ -22,9 +22,6 @@ export interface Industry {
   industryName: string
 }
 
-/**
- * empty object
- */
 export interface EnterpriseParams {
   businessLicenseId: string
   businessLicenseUrl?: string

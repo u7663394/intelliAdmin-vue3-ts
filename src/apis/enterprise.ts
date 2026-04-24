@@ -10,3 +10,8 @@ export const getEnterpriseListAPI = (params: EnterpriseListParams) => {
 export const getIndustryListAPI = () => {
   return request<Industry[]>('/park/industry')
 }
+
+// 上传文件接口
+export const uploadAPI = (data: FormData) => {
+  return request('/upload', 'POST', data)
+}
