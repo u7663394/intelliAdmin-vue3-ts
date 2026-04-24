@@ -11,6 +11,7 @@ const exterpriseList = ref<Enterprise[]>([])
 const params = ref<EnterpriseListParams>({
   page: 1,
   pageSize: 10,
+  name: '',
 })
 
 const getExterpriseList = async () => {
@@ -38,6 +39,17 @@ const pageChange = (newPage: number) => {
   params.value.page = newPage
   getExterpriseList()
 }
+
+/**
+ * 搜索
+ */
+const searchLoading = ref(false)
+const onSearch = async () => {
+  searchLoading.value = true
+  params.value.page = 1
+  await getExterpriseList()
+  searchLoading.value = false
+}
 </script>
 
 <template>
@@ -45,14 +57,20 @@ const pageChange = (newPage: number) => {
     <!-- 搜索区域 -->
     <div class="search-container">
       <div class="search-label">企业名称：</div>
-      <el-input clearable placeholder="请输入内容" class="search-main" />
-      <el-button type="primary">查询</el-button>
+      <el-input
+        v-model="params.name"
+        clearable
+        placeholder="请输入企业名称"
+        class="search-main"
+        @clear="onSearch"
+      />
+      <el-button :loading="searchLoading" type="primary" @click="onSearch">查询</el-button>
     </div>
     <div class="create-container">
       <el-button type="primary">添加企业</el-button>
     </div>
     <!-- 表格区域 -->
-    <div class="table">
+    <div class="table" v-loading="searchLoading">
       <el-table style="width: 100%" :data="exterpriseList">
         <el-table-column align="center" type="index" label="序号" width="120" />
         <el-table-column align="center" label="企业名称" width="320" prop="name" />
