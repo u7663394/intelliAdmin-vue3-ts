@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { delEnterpriseAPI, getEnterpriseListAPI } from '@/apis/enterprise'
+import { delEnterpriseAPI, getEnterpriseListAPI, getRentBuildListAPI } from '@/apis/enterprise'
 import type { Enterprise, EnterpriseListParams } from '@/types/enterprise'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox, type FormRules } from 'element-plus'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -74,6 +74,40 @@ const onDelete = async (id: string) => {
   getExterpriseList()
   ElMessage.success('删除成功!')
 }
+
+/**
+ * 添加合同对话框
+ */
+const buildList = ref<{ id: string; name: string }[]>([])
+const rentDialogVisible = ref(false)
+
+const addRent = async () => {
+  rentDialogVisible.value = true
+  const res = await getRentBuildListAPI()
+  buildList.value = res.data
+}
+
+const closeDialog = () => {
+  rentDialogVisible.value = false
+}
+
+/**
+ * 添加合同表单
+ */
+const rentForm = ref({
+  buildingId: undefined,
+  contractId: undefined,
+  contractUrl: '',
+  enterpriseId: undefined,
+  type: 0,
+  rentTime: [],
+})
+
+const rentRules = ref<FormRules>({
+  buildingId: [{ required: true, message: '请选择楼宇', trigger: 'change' }],
+  rentTime: [{ required: true, message: '请选择租赁日期', trigger: 'change' }],
+  contractId: [{ required: false, message: '请上传合同文件' }],
+})
 </script>
 
 <template>
@@ -107,7 +141,52 @@ const onDelete = async (id: string) => {
         />
         <el-table-column align="center" label="操作" width="350">
           <template #default="scope">
-            <el-button size="small" type="text">添加合同</el-button>
+            <el-button size="small" type="text" @click="addRent">添加合同</el-button>
+            <el-dialog
+              :modal="false"
+              title="添加合同"
+              v-model="rentDialogVisible"
+              width="580px"
+              @close="closeDialog"
+            >
+              <!-- 表单区域 -->
+              <div class="form-container">
+                <el-form ref="addForm" :model="rentForm" :rules="rentRules" label-position="top">
+                  <el-form-item label="租赁楼宇" prop="buildingId">
+                    <el-select v-model="rentForm.buildingId" placeholder="请选择">
+                      <el-option
+                        v-for="item in buildList"
+                        :key="item.id"
+                        :label="item.name"
+                        :value="item.id"
+                      />
+                    </el-select>
+                  </el-form-item>
+                  <el-form-item label="租赁起止日期" prop="rentTime">
+                    <el-date-picker
+                      v-model="rentForm.rentTime"
+                      type="daterange"
+                      range-separator="至"
+                      start-placeholder="开始日期"
+                      end-placeholder="结束日期"
+                      value-format="yyyy-MM-dd"
+                    />
+                  </el-form-item>
+                  <el-form-item label="租赁合同" prop="contractId">
+                    <el-upload action="#">
+                      <el-button size="small" type="primary" plain>上传合同文件</el-button>
+                      <div style="margin-left: 15px" slot="tip" class="el-upload__tip">
+                        支持扩展名：.doc .pdf, 文件大小不超过5M
+                      </div>
+                    </el-upload>
+                  </el-form-item>
+                </el-form>
+              </div>
+              <template #footer>
+                <el-button size="small" @click="closeDialog">取 消</el-button>
+                <el-button size="small" type="primary">确 定</el-button>
+              </template>
+            </el-dialog>
             <el-button size="small" type="text">查看</el-button>
             <el-button size="small" type="text" @click="editRent(scope.row.id)">编辑</el-button>
             <el-button size="small" type="text" @click="onDelete(scope.row.id)">删除</el-button>
