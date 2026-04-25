@@ -1,9 +1,19 @@
 <script setup lang="ts">
-import { getIndustryListAPI, uploadAPI } from '@/apis/enterprise'
+import { createEnterpriseAPI, getIndustryListAPI, uploadAPI } from '@/apis/enterprise'
 import type { EnterpriseParams, Industry } from '@/types/enterprise'
-import type { UploadRequestOptions, UploadUserFile } from 'element-plus'
+import { validMobile } from '@/utils/validate'
+import {
+  ElMessage,
+  type UploadRawFile,
+  type UploadRequestOptions,
+  type UploadUserFile,
+} from 'element-plus'
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
+/**
+ * 表单数据绑定 + 校验
+ */
 const addForm = ref<EnterpriseParams>({
   name: '',
   legalPerson: '',
@@ -13,6 +23,19 @@ const addForm = ref<EnterpriseParams>({
   contactNumber: '',
   businessLicenseUrl: '', // 营业执照url
   businessLicenseId: '',
+})
+
+const addRules = ref({
+  name: [{ required: true, message: '企业名称为必填', trigger: 'blur' }],
+  legalPerson: [{ required: true, message: '法人为必填', trigger: 'blur' }],
+  registeredAddress: [{ required: true, message: '注册地址为必填', trigger: 'blur' }],
+  industryCode: [{ required: true, message: '所在行业为必填', trigger: 'change' }],
+  contact: [{ required: true, message: '企业联系人为必填', trigger: 'blur' }],
+  contactNumber: [
+    { required: true, message: '企业联系人电话为必填', trigger: 'blur' },
+    { validator: validMobile, trigger: 'blur' },
+  ],
+  businessLicenseId: [{ required: false, message: '请上传营业执照', trigger: 'blur' }],
 })
 
 /**
@@ -50,6 +73,51 @@ const uploadRequest = async (options: UploadRequestOptions) => {
     url: res.data.url,
   })
 }
+
+/**
+ * 文件上传前校验
+ */
+const onExceed = () => {
+  ElMessage.error('只能上传一张营业执照')
+}
+
+const beforeUpload = (file: UploadRawFile) => {
+  // 1. 校验文件类型
+  const allowType = ['image/jpeg', 'image/png', 'image/jpg'].includes(file.type)
+  // 2. 校验文件大小 （byte -> kb -> mb）
+  const isValidSize = file.size / 1024 / 1024 < 5
+  // 3. 不满足条件则提示错误
+  if (!allowType) ElMessage.error('上传图片只能是 PNG/JPG/JPEG 格式')
+  if (!isValidSize) ElMessage.error('上传图片大小不能超过 5MB')
+  // 返回 boolean 决定是否上传
+  return allowType && isValidSize
+}
+
+/**
+ * 重置表单
+ */
+const ruleForm = ref()
+const resetForm = () => {
+  ruleForm.value.resetFields()
+  fileList.value = []
+}
+
+/**
+ * 提交表单
+ *   1. 表单校验
+ *   2. 调用添加接口
+ *   3. 提示成功 + 返回
+ */
+const router = useRouter()
+const submitForm = async () => {
+  // 1. 表单校验
+  await ruleForm.value.validate()
+  // 2. 调用添加接口
+  await createEnterpriseAPI(addForm.value)
+  // 3. 提示成功 + 返回
+  ElMessage.success('添加成功')
+  router.back()
+}
 </script>
 
 <template>
@@ -61,17 +129,17 @@ const uploadRequest = async (options: UploadRequestOptions) => {
       <div class="form-container">
         <div class="title">企业信息</div>
         <div class="form">
-          <el-form ref="ruleForm" label-width="100px">
-            <el-form-item label="企业名称">
+          <el-form ref="ruleForm" :model="addForm" :rules="addRules" label-width="100px">
+            <el-form-item label="企业名称" prop="name">
               <el-input v-model="addForm.name" />
             </el-form-item>
-            <el-form-item label="法人">
+            <el-form-item label="法人" prop="legalPerson">
               <el-input v-model="addForm.legalPerson" />
             </el-form-item>
-            <el-form-item label="注册地址">
+            <el-form-item label="注册地址" prop="registeredAddress">
               <el-input v-model="addForm.registeredAddress" />
             </el-form-item>
-            <el-form-item label="所在行业">
+            <el-form-item label="所在行业" prop="industryCode">
               <el-select v-model="addForm.industryCode">
                 <el-option
                   v-for="item in industryList"
@@ -81,14 +149,21 @@ const uploadRequest = async (options: UploadRequestOptions) => {
                 />
               </el-select>
             </el-form-item>
-            <el-form-item label="企业联系人">
+            <el-form-item label="企业联系人" prop="contact">
               <el-input v-model="addForm.contact" />
             </el-form-item>
-            <el-form-item label="联系电话">
+            <el-form-item label="联系电话" prop="contactNumber">
               <el-input v-model="addForm.contactNumber" />
             </el-form-item>
-            <el-form-item label="营业执照">
-              <el-upload action="#" :file-list="fileList" :http-request="uploadRequest">
+            <el-form-item label="营业执照" prop="businessLicenseId">
+              <el-upload
+                action="#"
+                :file-list="fileList"
+                :http-request="uploadRequest"
+                :before-upload="beforeUpload"
+                :limit="1"
+                :on-exceed="onExceed"
+              >
                 <el-button size="small" type="primary">点击上传</el-button>
                 <div style="margin-left: 15px" slot="tip" class="el-upload__tip">
                   支持扩展名：.png .jpg .jpeg, 文件大小不得超过5M
@@ -101,8 +176,8 @@ const uploadRequest = async (options: UploadRequestOptions) => {
     </main>
     <footer class="add-footer">
       <div class="btn-container">
-        <el-button>重置</el-button>
-        <el-button type="primary">确定</el-button>
+        <el-button @click="resetForm">重置</el-button>
+        <el-button type="primary" @click="submitForm">确定</el-button>
       </div>
     </footer>
   </div>

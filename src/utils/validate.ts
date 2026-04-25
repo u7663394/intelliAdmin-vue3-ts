@@ -7,8 +7,12 @@ export const validUsername = (str: string) => {
   return valid_map.indexOf(str.trim()) >= 0
 }
 
-export const validMobile = (mobile: string) => {
-  return /^1[3-9]\d{9}$/.test(mobile)
+export const validMobile = (rule: any, mobile: any, callback: any) => {
+  if (/^1[3-9]\d{9}$/.test(mobile)) {
+    callback()
+  } else {
+    callback('请输入正确手机号')
+  }
 }
 
 // 校验车牌号

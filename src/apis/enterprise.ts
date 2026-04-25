@@ -1,4 +1,9 @@
-import type { EnterpriseListData, EnterpriseListParams, Industry } from '@/types/enterprise'
+import type {
+  EnterpriseListData,
+  EnterpriseListParams,
+  EnterpriseParams,
+  Industry,
+} from '@/types/enterprise'
 import { request } from '@/utils/reuqest'
 
 // 获取企业列表
@@ -14,4 +19,9 @@ export const getIndustryListAPI = () => {
 // 上传文件接口
 export const uploadAPI = (data: FormData) => {
   return request('/upload', 'POST', data)
+}
+
+// 添加企业接口
+export const createEnterpriseAPI = (data: EnterpriseParams) => {
+  return request('/park/enterprise', 'POST', data)
 }
