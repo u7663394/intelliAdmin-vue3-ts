@@ -58,3 +58,8 @@ export const createRentAPI = (data: Rent) => {
 export const getRentListAPI = (id: string) => {
   return request<Datum[]>(`/park/enterprise/rent/${id}`)
 }
+
+// 退租接口
+export const outRentAPI = (rentId: string)=> {
+  return request(`/park/enterprise/rent/${rentId}`, 'PUT')
+}

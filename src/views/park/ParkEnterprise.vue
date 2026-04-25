@@ -5,6 +5,7 @@ import {
   getEnterpriseListAPI,
   getRentBuildListAPI,
   getRentListAPI,
+  outRentAPI,
   uploadAPI,
 } from '@/apis/enterprise'
 import type { Enterprise, EnterpriseListParams } from '@/types/enterprise'
@@ -44,17 +45,20 @@ getExterpriseList()
 /**
  * 获取合同列表并渲染
  */
+const rentLoading = ref(false)
 const expandRowKeys = ref<string[]>([])
 
 const handleExpand = async (row: any, rows: any[]) => {
   const isExpend = rows.find((item) => item.id === row.id)
   // 展开时，获取合同列表并渲染
   if (isExpend) {
+    rentLoading.value = true
     const res = await getRentListAPI(row.id)
     res.data.forEach((ele) => {
       row.rentList.push(ele)
     })
     expandRowKeys.value.push(row.id)
+    rentLoading.value = false
   } else {
     // 关闭时，把当前行的合同列表清空
     row.rentList.splice(0)
@@ -214,6 +218,58 @@ const confirmAdd = async () => {
   rentForm.value.contractId = ''
   contractList.value = []
 }
+
+/**
+ * 格式化合同状态
+ *   1. :type 属性控制标签颜色
+ *   2. 标签内容显示文本
+ */
+const formatInfoType = (status: number) => {
+  switch (status) {
+    case 0:
+      return 'warning'
+    case 1:
+      return 'success'
+    case 2:
+      return 'info'
+    case 3:
+      return 'danger'
+  }
+}
+
+const formatStatus = (type: number) => {
+  switch (type) {
+    case 0:
+      return '待生效'
+    case 1:
+      return '生效中'
+    case 2:
+      return '已到期'
+    case 3:
+      return '已退租'
+  }
+}
+
+/**
+ * 退租功能
+ *   1. 确认框
+ *   2. 调用退租接口
+ *   3. 重新渲染 + 提示
+ */
+const outRent = async (rentId: string, rowId: string) => {
+  // 1. 确认框
+  await ElMessageBox.confirm('确认退租吗?', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+  // 2. 调用退租接口
+  await outRentAPI(rentId)
+  // 2. 重新渲染 + 提示
+  await getExterpriseList()
+  expandRowKeys.value = []
+  ElMessage.success('退租成功!')
+}
 </script>
 
 <template>
@@ -245,15 +301,29 @@ const confirmAdd = async () => {
         <!-- 展开部分 -->
         <el-table-column type="expand">
           <template #default="{ row }">
-            <el-table :data="row.rentList">
+            <el-table :data="row.rentList" v-loading="rentLoading">
               <el-table-column label="租赁楼宇" width="320" prop="buildingName" />
               <el-table-column label="租赁起始时间" prop="startTime" />
-              <el-table-column label="合同状态" prop="status" />
-              <el-table-column label="操作" width="180">
-                <template>
+              <el-table-column align="center" label="合同状态">
+                <template #default="scope">
+                  <el-tag :type="formatInfoType(scope.row.status)">
+                    {{ formatStatus(scope.row.status) }}
+                  </el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column align="center" label="操作" width="250">
+                <template #default="scope">
                   <el-button size="small" type="text">续租</el-button>
-                  <el-button size="small" type="text">退租</el-button>
-                  <el-button size="small" type="text">删除</el-button>
+                  <el-button
+                    size="small"
+                    type="text"
+                    :disabled="scope.row.status === 3"
+                    @click="outRent(scope.row.id, row.id)"
+                    >退租</el-button
+                  >
+                  <el-button size="small" type="text" :disabled="!(scope.row.status === 3)"
+                    >删除</el-button
+                  >
                 </template>
               </el-table-column>
             </el-table>
