@@ -56,13 +56,16 @@ export interface EnterpriseDetail {
 }
 
 export interface Rent {
-  contractId: number
-  contractName: string
-  contractUrl: string
-  createTime: string
-  endTime: string
-  id: number
-  name: string
-  startTime: string
-  status: number
+  contractId?: number
+  contractName?: string
+  contractUrl?: string
+  createTime?: string
+  endTime?: string
+  id?: number
+  name?: string
+  startTime?: string
+  status?: number
+  buildingId?: string | number
+  enterpriseId?: string | number
+  type?: any
 }

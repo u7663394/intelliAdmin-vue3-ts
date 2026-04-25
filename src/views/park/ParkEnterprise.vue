@@ -1,7 +1,19 @@
 <script setup lang="ts">
-import { delEnterpriseAPI, getEnterpriseListAPI, getRentBuildListAPI } from '@/apis/enterprise'
+import {
+  createRentAPI,
+  delEnterpriseAPI,
+  getEnterpriseListAPI,
+  getRentBuildListAPI,
+  uploadAPI,
+} from '@/apis/enterprise'
 import type { Enterprise, EnterpriseListParams } from '@/types/enterprise'
-import { ElMessage, ElMessageBox, type FormRules } from 'element-plus'
+import {
+  ElMessage,
+  ElMessageBox,
+  type FormRules,
+  type UploadRawFile,
+  type UploadRequestOptions,
+} from 'element-plus'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -81,10 +93,11 @@ const onDelete = async (id: string) => {
 const buildList = ref<{ id: string; name: string }[]>([])
 const rentDialogVisible = ref(false)
 
-const addRent = async () => {
+const addRent = async (id: string) => {
   rentDialogVisible.value = true
   const res = await getRentBuildListAPI()
   buildList.value = res.data
+  rentForm.value.enterpriseId = id
 }
 
 const closeDialog = () => {
@@ -94,7 +107,7 @@ const closeDialog = () => {
 /**
  * 添加合同表单
  */
-const rentForm = ref({
+const rentForm = ref<any>({
   buildingId: undefined,
   contractId: undefined,
   contractUrl: '',
@@ -108,6 +121,72 @@ const rentRules = ref<FormRules>({
   rentTime: [{ required: true, message: '请选择租赁日期', trigger: 'change' }],
   contractId: [{ required: false, message: '请上传合同文件' }],
 })
+
+/**
+ * 上传合同文件
+ */
+const beforeUpload = (file: UploadRawFile) => {
+  // 1. 校验文件类型
+  const allowType = [
+    'application/pdf',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/msword',
+  ].includes(file.type)
+  // 2. 校验文件大小
+  const isValidSize = file.size / 1024 / 1024 < 5
+  // 3. 提示错误信息
+  if (!allowType) ElMessage.error('上传合同文件只能是 .doc, .pdf 格式')
+  if (!isValidSize) ElMessage.error('上传合同文件大小不能超过 5MB')
+  // 最后返回 boolean 值，决定是否上传
+  return allowType && isValidSize
+}
+
+const contractList = ref<any>([])
+const uploadHandle = async (options: UploadRequestOptions) => {
+  const file = options.file
+  // 1. 构造 FormData 对象
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('type', 'contract')
+  // 2. 调用上传接口
+  const res: any = await uploadAPI(formData)
+  rentForm.value.contractId = res.data.id
+  rentForm.value.contractUrl = res.data.url
+  contractList.value.push({ name: file.name, url: res.data.url })
+}
+
+/**
+ * 确认添加合同
+ *   1. 验证表单
+ *   2. 调用添加接口
+ *   3. 刷新企业列表
+ *   4. 关闭对话框并清空表单
+ */
+const addForm = ref()
+const confirmAdd = async () => {
+  // 1. 验证表单
+  await addForm.value.validate()
+  // 2. 调用添加接口
+  const { buildingId, contractId, contractUrl, enterpriseId, type } = rentForm.value
+  await createRentAPI({
+    buildingId,
+    contractId,
+    contractUrl,
+    enterpriseId,
+    type,
+    startTime: rentForm.value.rentTime[0],
+    endTime: rentForm.value.rentTime[1],
+  })
+  ElMessage.success('添加合同成功')
+  // 3. 刷新企业列表
+  getExterpriseList()
+  // 4. 关闭对话框并清空表单
+  rentDialogVisible.value = false
+  addForm.value.resetFields()
+  rentForm.value.contractUrl = ''
+  rentForm.value.contractId = ''
+  contractList.value = []
+}
 </script>
 
 <template>
@@ -141,7 +220,7 @@ const rentRules = ref<FormRules>({
         />
         <el-table-column align="center" label="操作" width="350">
           <template #default="scope">
-            <el-button size="small" type="text" @click="addRent">添加合同</el-button>
+            <el-button size="small" type="text" @click="addRent(scope.row.id)">添加合同</el-button>
             <el-dialog
               :modal="false"
               title="添加合同"
@@ -173,7 +252,12 @@ const rentRules = ref<FormRules>({
                     />
                   </el-form-item>
                   <el-form-item label="租赁合同" prop="contractId">
-                    <el-upload action="#">
+                    <el-upload
+                      action="#"
+                      :http-request="uploadHandle"
+                      :before-upload="beforeUpload"
+                      :file-list="contractList"
+                      >>
                       <el-button size="small" type="primary" plain>上传合同文件</el-button>
                       <div style="margin-left: 15px" slot="tip" class="el-upload__tip">
                         支持扩展名：.doc .pdf, 文件大小不超过5M
@@ -184,7 +268,7 @@ const rentRules = ref<FormRules>({
               </div>
               <template #footer>
                 <el-button size="small" @click="closeDialog">取 消</el-button>
-                <el-button size="small" type="primary">确 定</el-button>
+                <el-button size="small" type="primary" @click="confirmAdd">确 定</el-button>
               </template>
             </el-dialog>
             <el-button size="small" type="text">查看</el-button>

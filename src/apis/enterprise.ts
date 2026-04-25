@@ -4,6 +4,7 @@ import type {
   EnterpriseListParams,
   EnterpriseParams,
   Industry,
+  Rent,
 } from '@/types/enterprise'
 import { request } from '@/utils/reuqest'
 
@@ -45,4 +46,9 @@ export const delEnterpriseAPI = (id: string) => {
 // 获取楼宇列表
 export const getRentBuildListAPI = () => {
   return request<{ id: string; name: string }[]>('/park/rent/building')
+}
+
+// 添加合同接口
+export const createRentAPI = (data: Rent) => {
+  return request('/park/enterprise/rent', 'POST', data)
 }
