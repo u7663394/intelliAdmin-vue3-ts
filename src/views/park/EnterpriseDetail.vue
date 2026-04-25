@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getEnterpriseDetailAPI } from '@/apis/enterprise'
+import { downloadContract, getEnterpriseDetailAPI } from '@/apis/enterprise'
 import type { EnterpriseDetail } from '@/types/enterprise'
 import { ref } from 'vue'
 import { useRoute } from 'vue-router'
@@ -29,6 +29,28 @@ const getDetail = async () => {
   form.value = res.data
 }
 getDetail()
+
+/**
+ * 下载合同
+ *   1. 调用接口获取文件流
+ *   2. 利用 URL.createObjectURL() 创建一个指向该文件流的 URL
+ *   3. 创建一个 a 标签, 设置 href 为上一步创建的 URL
+ *   4. a.download 指定下载文件名
+ *   5. 触发 a 标签的 click 事件, 开始下载
+ */
+const onDownload = async (row: any) => {
+  // 1. 调用接口
+  const data = await downloadContract(row.contractId)
+  // 2. 创建 URL
+  const url = window.URL.createObjectURL(data)
+  // 3. 创建 a 标签
+  const a = document.createElement('a')
+  a.href = url
+  // 4. 指定下载文件名
+  a.download = row.contractName || ''
+  // 5. 触发点击下载
+  a.click()
+}
 </script>
 
 <template>
@@ -57,8 +79,8 @@ getDetail()
             </el-table-column>
             <el-table-column prop="createTime" label="录入时间" />
             <el-table-column prop="address" label="操作">
-              <template>
-                <el-button type="text">合同下载</el-button>
+              <template #default="{ row }">
+                <el-button type="text" @click="onDownload(row)"> 合同下载 </el-button>
               </template>
             </el-table-column>
           </el-table>

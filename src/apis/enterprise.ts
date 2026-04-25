@@ -7,7 +7,7 @@ import type {
   Industry,
   Rent,
 } from '@/types/enterprise'
-import { request } from '@/utils/reuqest'
+import instance, { request } from '@/utils/reuqest'
 
 // 获取企业列表
 export const getEnterpriseListAPI = (params: EnterpriseListParams) => {
@@ -60,6 +60,15 @@ export const getRentListAPI = (id: string) => {
 }
 
 // 退租接口
-export const outRentAPI = (rentId: string)=> {
+export const outRentAPI = (rentId: string) => {
   return request(`/park/enterprise/rent/${rentId}`, 'PUT')
+}
+
+// 下载合同接口
+export const downloadContract = (id: string) => {
+  return instance<null, Blob>({
+    url: `/download/${id}`,
+    // 让 axios 把响应的文件流格式化成 Blob 数据块对象
+    responseType: 'blob',
+  })
 }
