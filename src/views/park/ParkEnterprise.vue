@@ -391,7 +391,12 @@ const outRent = async (rentId: string, rowId: string) => {
                 <el-button size="small" type="primary" @click="confirmAdd">确 定</el-button>
               </template>
             </el-dialog>
-            <el-button size="small" type="text">查看</el-button>
+            <el-button
+              size="small"
+              type="text"
+              @click="$router.push(`/enterpriseDetail?id=${scope.row.id}`)"
+              >查看</el-button
+            >
             <el-button size="small" type="text" @click="editRent(scope.row.id)">编辑</el-button>
             <el-button size="small" type="text" @click="onDelete(scope.row.id)">删除</el-button>
           </template>
