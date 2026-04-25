@@ -2,6 +2,7 @@
 import { getRuleListAPI } from '@/apis/car'
 import type { Car, CarListParams } from '@/types/car'
 import { ref } from 'vue'
+import { utils, writeFileXLSX } from 'xlsx'
 
 /**
  * 获取规则列表 + 渲染
@@ -28,13 +29,61 @@ const chargeType: any = {
   turn: '按次收费',
   partition: '分段消费',
 }
+
+/**
+ * 导出为 Excel
+ */
+
+// 表头英文字段
+const tableHeaderKeys = [
+  'ruleNumber',
+  'ruleName',
+  'freeDuration',
+  'chargeCeiling',
+  'chargeType',
+  'ruleNameView',
+]
+// 表头中文字段
+const tableHeaderValues = [
+  '计费规则编号',
+  '计费规则名称',
+  '免费时长(分钟)',
+  '收费上线(元)',
+  '计费方式',
+  '计费规则',
+]
+
+const exportToExcel = () => {
+  // 0. 处理业务数据
+  const sheetData = ruleList.value.map((ele: any) => {
+    const output: any = {}
+    tableHeaderKeys.forEach((key) => {
+      if (key === 'chargeType') {
+        output[key] = chargeType[ele[key]]
+      } else {
+        output[key] = ele[key]
+      }
+    })
+    return output
+  })
+  // 1. 创建一个新的 workbook
+  const workbook = utils.book_new()
+  // 2. 创建一个 worksheet, 传入 sheetData 数据
+  const worksheet = utils.json_to_sheet(sheetData)
+  // 3. 把 worksheet 添加到 workbook 中, 并命名为 'Data'
+  utils.book_append_sheet(workbook, worksheet, 'Data')
+  // 4. 改写表头
+  utils.sheet_add_aoa(worksheet, [tableHeaderValues], { origin: 'A1' })
+  // 5. 导出 Excel 文件
+  writeFileXLSX(workbook, '停车计费规则.xlsx')
+}
 </script>
 
 <template>
   <div class="rule-container">
     <div class="create-container">
       <el-button type="primary">增加停车计费规则</el-button>
-      <el-button>导出Excel</el-button>
+      <el-button @click="exportToExcel">导出Excel</el-button>
     </div>
     <!-- 表格区域 -->
     <div class="table">
