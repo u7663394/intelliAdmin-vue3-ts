@@ -6,12 +6,26 @@ import { useRoute } from 'vue-router'
 
 /**
  * 获取企业详情 + 渲染
+ *
+ * 预处理预览地址:
+ *   1. PDF: 浏览器直接打开
+ *   2. doc 文件: 需要拼接前缀预览地址
  */
+const previewURL = 'https://view.officeapps.live.com/op/view.aspx?src='
 const route = useRoute()
 const form = ref<EnterpriseDetail>({} as EnterpriseDetail)
 const getDetail = async () => {
   if (!route.query.id) return
   const res = await getEnterpriseDetailAPI(route.query.id as string)
+  // 预处理预览地址
+  res.data.rent.forEach((ele) => {
+    const url = ele.contractUrl
+    // 获取文件后缀, 是 .doc 的话拼接
+    const fileExtension = url!.slice(url!.lastIndexOf('.'))
+    if (fileExtension === '.doc') {
+      ele.contractUrl = previewURL + ele.contractUrl
+    }
+  })
   form.value = res.data
 }
 getDetail()
@@ -35,7 +49,9 @@ getDetail()
             <el-table-column label="租赁合同(点击预览)">
               <template #default="{ row }">
                 <el-button type="text">
-                  {{ row.contractName }}
+                  <a :href="row.contractUrl" target="_blank">
+                    {{ row.contractName }}
+                  </a>
                 </el-button>
               </template>
             </el-table-column>
