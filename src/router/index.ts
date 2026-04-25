@@ -131,7 +131,7 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/enterpriseAdd',
     component: () => import('@/views/park/AddEnterprise.vue'),
-    meta: { title: '添加企业' },
+    meta: { title: '企业管理' },
   },
   {
     path: '/:pathMatch(.*)*',

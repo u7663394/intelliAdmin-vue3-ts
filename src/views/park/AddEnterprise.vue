@@ -1,5 +1,11 @@
 <script setup lang="ts">
-import { createEnterpriseAPI, getIndustryListAPI, uploadAPI } from '@/apis/enterprise'
+import {
+  createEnterpriseAPI,
+  getEnterpriseDetailAPI,
+  getIndustryListAPI,
+  updateEnterpriseAPI,
+  uploadAPI,
+} from '@/apis/enterprise'
 import type { EnterpriseParams, Industry } from '@/types/enterprise'
 import { validMobile } from '@/utils/validate'
 import {
@@ -8,8 +14,8 @@ import {
   type UploadRequestOptions,
   type UploadUserFile,
 } from 'element-plus'
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 /**
  * 表单数据绑定 + 校验
@@ -103,19 +109,69 @@ const resetForm = () => {
 }
 
 /**
+ * 编辑
+ *   1. 获取路由参数 (id)
+ *   2. 调用接口回显数据
+ */
+const route = useRoute()
+const id = computed(() => {
+  return route.query.id as string
+})
+
+const getEnterpriseDetail = async () => {
+  const res = await getEnterpriseDetailAPI(id.value)
+  const {
+    businessLicenseId,
+    businessLicenseUrl,
+    contact,
+    contactNumber,
+    industryCode,
+    legalPerson,
+    name,
+    registeredAddress,
+    businessLicenseName,
+  } = res.data
+  addForm.value = {
+    businessLicenseId,
+    businessLicenseUrl,
+    contact,
+    contactNumber,
+    industryCode,
+    legalPerson,
+    name,
+    registeredAddress,
+  }
+  fileList.value.push({
+    name: businessLicenseName,
+    url: businessLicenseUrl,
+  })
+}
+
+onMounted(() => {
+  if (id.value) getEnterpriseDetail()
+})
+
+/**
  * 提交表单
  *   1. 表单校验
- *   2. 调用添加接口
+ *   2. 调用添加/编辑接口
  *   3. 提示成功 + 返回
  */
 const router = useRouter()
 const submitForm = async () => {
   // 1. 表单校验
   await ruleForm.value.validate()
-  // 2. 调用添加接口
-  await createEnterpriseAPI(addForm.value)
+  // 2. 调用添加/编辑接口
+  if (id.value) {
+    await updateEnterpriseAPI({
+      ...addForm.value,
+      id: id.value,
+    })
+  } else {
+    await createEnterpriseAPI(addForm.value)
+  }
   // 3. 提示成功 + 返回
-  ElMessage.success('添加成功')
+  ElMessage.success(id.value ? '编辑成功' : '添加成功')
   router.back()
 }
 </script>
@@ -123,7 +179,7 @@ const submitForm = async () => {
 <template>
   <div class="add-enterprise">
     <header class="add-header">
-      <el-page-header content="添加企业" @back="$router.back()" />
+      <el-page-header :content="id ? '编辑企业' : '添加企业'" @back="$router.back()" />
     </header>
     <main class="add-main">
       <div class="form-container">

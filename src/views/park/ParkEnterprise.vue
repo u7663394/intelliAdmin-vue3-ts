@@ -2,6 +2,7 @@
 import { getEnterpriseListAPI } from '@/apis/enterprise'
 import type { Enterprise, EnterpriseListParams } from '@/types/enterprise'
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 /**
  * 获取企业列表并渲染
@@ -50,6 +51,14 @@ const onSearch = async () => {
   await getExterpriseList()
   searchLoading.value = false
 }
+
+/**
+ * 编辑企业
+ */
+const router = useRouter()
+const editRent = (id: string) => {
+  router.push(`/enterpriseAdd?id=${id}`)
+}
 </script>
 
 <template>
@@ -85,7 +94,7 @@ const onSearch = async () => {
           <template #default="scope">
             <el-button size="small" type="text">添加合同</el-button>
             <el-button size="small" type="text">查看</el-button>
-            <el-button size="small" type="text">编辑</el-button>
+            <el-button size="small" type="text" @click="editRent(scope.row.id)">编辑</el-button>
             <el-button size="small" type="text">删除</el-button>
           </template>
         </el-table-column>

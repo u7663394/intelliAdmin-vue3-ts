@@ -31,10 +31,38 @@ export interface EnterpriseParams {
   legalPerson: string
   name: string
   registeredAddress: string
+  id?: string
 }
 
 export interface EnterpriseFile {
   id: string
   name: string
   url: string
+}
+
+export interface EnterpriseDetail {
+  businessLicenseId: string
+  businessLicenseName: string
+  businessLicenseUrl: string
+  contact: string
+  contactNumber: string
+  id: number
+  industryCode: string
+  industryName: string
+  legalPerson: string
+  name: string
+  registeredAddress: string
+  rent: Rent[]
+}
+
+export interface Rent {
+  contractId: number
+  contractName: string
+  contractUrl: string
+  createTime: string
+  endTime: string
+  id: number
+  name: string
+  startTime: string
+  status: number
 }
