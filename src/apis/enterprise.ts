@@ -36,3 +36,8 @@ export const getEnterpriseDetailAPI = (id: string) => {
 export const updateEnterpriseAPI = (data: EnterpriseParams) => {
   return request('/park/enterprise', 'PUT', data)
 }
+
+// 删除企业接口
+export const delEnterpriseAPI = (id: string) => {
+  return request(`/park/enterprise/${id}`, 'DELETE')
+}

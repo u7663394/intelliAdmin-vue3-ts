@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { getEnterpriseListAPI } from '@/apis/enterprise'
+import { delEnterpriseAPI, getEnterpriseListAPI } from '@/apis/enterprise'
 import type { Enterprise, EnterpriseListParams } from '@/types/enterprise'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -59,6 +60,20 @@ const router = useRouter()
 const editRent = (id: string) => {
   router.push(`/enterpriseAdd?id=${id}`)
 }
+
+/**
+ * 删除企业
+ */
+const onDelete = async (id: string) => {
+  await ElMessageBox.confirm('确认删除该企业吗?', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+  await delEnterpriseAPI(id)
+  getExterpriseList()
+  ElMessage.success('删除成功!')
+}
 </script>
 
 <template>
@@ -95,7 +110,7 @@ const editRent = (id: string) => {
             <el-button size="small" type="text">添加合同</el-button>
             <el-button size="small" type="text">查看</el-button>
             <el-button size="small" type="text" @click="editRent(scope.row.id)">编辑</el-button>
-            <el-button size="small" type="text">删除</el-button>
+            <el-button size="small" type="text" @click="onDelete(scope.row.id)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
