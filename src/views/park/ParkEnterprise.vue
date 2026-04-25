@@ -4,6 +4,7 @@ import {
   delEnterpriseAPI,
   getEnterpriseListAPI,
   getRentBuildListAPI,
+  getRentListAPI,
   uploadAPI,
 } from '@/apis/enterprise'
 import type { Enterprise, EnterpriseListParams } from '@/types/enterprise'
@@ -30,10 +31,36 @@ const params = ref<EnterpriseListParams>({
 
 const getExterpriseList = async () => {
   const res = await getEnterpriseListAPI(params.value)
-  exterpriseList.value = res.data?.rows
+  exterpriseList.value = res.data?.rows.map((ele) => {
+    return {
+      ...ele,
+      rentList: [],
+    }
+  })
   total.value = res.data?.total
 }
 getExterpriseList()
+
+/**
+ * 获取合同列表并渲染
+ */
+const expandRowKeys = ref<string[]>([])
+
+const handleExpand = async (row: any, rows: any[]) => {
+  const isExpend = rows.find((item) => item.id === row.id)
+  // 展开时，获取合同列表并渲染
+  if (isExpend) {
+    const res = await getRentListAPI(row.id)
+    res.data.forEach((ele) => {
+      row.rentList.push(ele)
+    })
+    expandRowKeys.value.push(row.id)
+  } else {
+    // 关闭时，把当前行的合同列表清空
+    row.rentList.splice(0)
+    expandRowKeys.value = expandRowKeys.value.filter((value) => value !== row.id)
+  }
+}
 
 /**
  * 联系电话脱敏
@@ -208,7 +235,30 @@ const confirmAdd = async () => {
     </div>
     <!-- 表格区域 -->
     <div class="table" v-loading="searchLoading">
-      <el-table style="width: 100%" :data="exterpriseList">
+      <el-table
+        style="width: 100%"
+        :data="exterpriseList"
+        @expand-change="handleExpand"
+        row-key="id"
+        :expand-row-keys="expandRowKeys"
+      >
+        <!-- 展开部分 -->
+        <el-table-column type="expand">
+          <template #default="{ row }">
+            <el-table :data="row.rentList">
+              <el-table-column label="租赁楼宇" width="320" prop="buildingName" />
+              <el-table-column label="租赁起始时间" prop="startTime" />
+              <el-table-column label="合同状态" prop="status" />
+              <el-table-column label="操作" width="180">
+                <template>
+                  <el-button size="small" type="text">续租</el-button>
+                  <el-button size="small" type="text">退租</el-button>
+                  <el-button size="small" type="text">删除</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+          </template>
+        </el-table-column>
         <el-table-column align="center" type="index" label="序号" width="120" />
         <el-table-column align="center" label="企业名称" width="320" prop="name" />
         <el-table-column align="center" label="联系人" prop="contact" />
@@ -248,7 +298,7 @@ const confirmAdd = async () => {
                       range-separator="至"
                       start-placeholder="开始日期"
                       end-placeholder="结束日期"
-                      value-format="yyyy-MM-dd"
+                      value-format="YYYY-MM-DD"
                     />
                   </el-form-item>
                   <el-form-item label="租赁合同" prop="contractId">

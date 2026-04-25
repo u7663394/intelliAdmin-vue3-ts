@@ -69,3 +69,13 @@ export interface Rent {
   enterpriseId?: string | number
   type?: any
 }
+
+export interface Datum {
+  endTime: string
+  exitFlag: number
+  id: string
+  name: string
+  startTime: string
+  renewFlag: number
+  status: number
+}

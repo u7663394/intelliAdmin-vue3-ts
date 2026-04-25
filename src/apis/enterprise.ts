@@ -1,4 +1,5 @@
 import type {
+  Datum,
   EnterpriseDetail,
   EnterpriseListData,
   EnterpriseListParams,
@@ -51,4 +52,9 @@ export const getRentBuildListAPI = () => {
 // 添加合同接口
 export const createRentAPI = (data: Rent) => {
   return request('/park/enterprise/rent', 'POST', data)
+}
+
+// 获取合同接口
+export const getRentListAPI = (id: string) => {
+  return request<Datum[]>(`/park/enterprise/rent/${id}`)
 }
