@@ -139,6 +139,11 @@ export const routes: RouteRecordRaw[] = [
     meta: { title: '企业详情' },
   },
   {
+    path: '/roleAdd',
+    component: () => import('@/views/system/AddRole.vue'),
+    meta: { title: '添加角色' },
+  },
+  {
     path: '/:pathMatch(.*)*',
     component: () => import('@/views/NotFound.vue'),
     meta: { hidden: true },

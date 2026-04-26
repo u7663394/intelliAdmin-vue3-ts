@@ -106,7 +106,7 @@ const getRoleUserList = async (roleId: number) => {
           <img src="@/assets/more.svg" class="icon" />
         </div>
       </div>
-      <el-button class="addBtn" size="small">添加角色</el-button>
+      <el-button class="addBtn" size="small" @click="$router.push('/roleAdd')">添加角色</el-button>
     </div>
     <!-- 右侧权限和成员 -->
     <div class="right-wrapper">
