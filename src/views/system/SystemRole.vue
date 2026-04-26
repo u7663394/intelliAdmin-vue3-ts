@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getRoleListAPI, getTreeListAPI } from '@/apis/system'
+import { getRoleDetailAPI, getRoleListAPI, getTreeListAPI } from '@/apis/system'
 import type { Role, RoleData } from '@/types/system'
 import { ref } from 'vue'
 import user from '@/assets/user.svg'
@@ -14,6 +14,7 @@ const getRoleList = async () => {
   roleLoading.value = true
   const res = await getRoleListAPI()
   roleList.value = res.data
+  getRoleDetail(roleList.value[0]!.roleId!)
   roleLoading.value = false
 }
 getRoleList()
@@ -24,6 +25,8 @@ getRoleList()
 const activeIndex = ref(0)
 const changeRole = (index: number) => {
   activeIndex.value = index
+  const roleId = roleList.value[index]!.roleId
+  if (roleId) getRoleDetail(roleId)
 }
 
 /**
@@ -47,6 +50,23 @@ const addDisabled = (treeList: RoleData[]) => {
     if (ele.children) {
       addDisabled(ele.children)
     }
+  })
+}
+
+/**
+ * 获取角色详情
+ *   1. 调接口获取权限列表
+ *   2. 遍历权限树，设置选中状态
+ */
+const treeRef = ref()
+const permList = ref<number[]>([])
+const getRoleDetail = async (roleId: number) => {
+  // 1. 调接口
+  const res = await getRoleDetailAPI(roleId)
+  permList.value = res.data.perms
+  // 2. 遍历树，设置状态
+  treeRef.value.forEach((ele: any, index: number) => {
+    ele.setCheckedKeys(permList.value[index]!)
   })
 }
 </script>
@@ -79,6 +99,7 @@ const addDisabled = (treeList: RoleData[]) => {
         <div v-for="item in treeList" :key="item.id" class="tree-item">
           <div class="tree-title">{{ item.title }}</div>
           <el-tree
+            ref="treeRef"
             :data="item.children"
             node-key="id"
             :props="{ label: 'title' }"
