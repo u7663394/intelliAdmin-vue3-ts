@@ -18,3 +18,14 @@ export interface RoleDetail {
   roleName: string
   userTotal: number // 角色人数
 }
+
+export interface RoleUserData {
+  rows: RoleUser[]
+  total: number
+}
+
+export interface RoleUser {
+  id: number
+  name: string
+  userName: string
+}
