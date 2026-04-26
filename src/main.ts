@@ -9,10 +9,12 @@ import './styles/index.scss'
 // permission control
 import './permission'
 import { auth } from './directive'
+import AuthBtn from './components/AuthBtn.vue'
 
 const app = createApp(App)
 app.use(ElementPlus)
 app.use(createPinia())
 app.use(router)
 app.directive('auth', auth)
+app.component('auth-btn', AuthBtn)
 app.mount('#app')

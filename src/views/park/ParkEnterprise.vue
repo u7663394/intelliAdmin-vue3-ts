@@ -293,6 +293,11 @@ const outRent = async (rentId: string, rowId: string) => {
         v-auth="'park:enterprise:add_edit'"
         >添加企业</el-button
       >
+      <!-- 
+      <auth-btn btn-perm="park:enterprise:add_edit">
+        <el-button type="primary" @click="$router.push('/exterpriseAdd')">添加企业</el-button>
+      </auth-btn> 
+      -->
     </div>
     <!-- 表格区域 -->
     <div class="table" v-loading="searchLoading">
@@ -403,7 +408,9 @@ const outRent = async (rentId: string, rowId: string) => {
               >查看</el-button
             >
             <el-button size="small" type="text" @click="editRent(scope.row.id)">编辑</el-button>
-            <el-button size="small" type="text" @click="onDelete(scope.row.id)">删除</el-button>
+            <auth-btn btn-perm="park:enterprise:remove">
+              <el-button size="small" type="text" @click="onDelete(scope.row.id)">删除</el-button>
+            </auth-btn>
           </template>
         </el-table-column>
       </el-table>
