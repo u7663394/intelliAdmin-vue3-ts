@@ -1,6 +1,9 @@
 import { useUserStore } from './stores/user'
 import router from './router'
 import { getProfileAPI } from './apis/user'
+import type { RouteRecordRaw } from 'vue-router'
+import { asyncRoutes } from './router/asyncRoutes'
+import { useMenuStore } from './stores/menu'
 
 /**
  * 路由前置守卫 -> 访问权限控制
@@ -11,7 +14,7 @@ import { getProfileAPI } from './apis/user'
  *   3. return undefined or true: 放行
  */
 const wihteList = ['/login', '/404']
-router.beforeEach(async (to) => {
+router.beforeEach(async (to, next) => {
   // 没有 token 且不访问白名单 -> 重定向到登录页
   const userStore = useUserStore()
   if (!userStore.token && !wihteList.includes(to.path)) {
@@ -22,8 +25,15 @@ router.beforeEach(async (to) => {
     const res = await getProfileAPI()
     userStore.setProfile(res.data)
     // 获取用户权限数据
-    const firstRoutePerms = getFirstRoutePerms(res.data.permissions)
+    const firstRoutePerms = getFirstRoutePerms(res.data.permissions) as string[]
     const secondRoutePerms = getSecondRoutePerms(res.data.permissions)
+    // 最终路由表
+    const perRoutes = getRoutes(firstRoutePerms, secondRoutePerms, asyncRoutes)
+    perRoutes.forEach((ele) => {
+      router.addRoute(ele)
+    })
+    const menuStore = useMenuStore()
+    menuStore.setMenuList(perRoutes)
   }
 })
 
@@ -48,4 +58,30 @@ const getSecondRoutePerms = (permsArr: string[]) => {
     return `${arr[0]}:${arr[1]}`
   })
   return [...new Set(newArr)]
+}
+
+/**
+ * 根据一级和二级权限数据对动态路由表进行过滤
+ */
+const getRoutes = (
+  firstRoutePerms: string[],
+  secondRoutePerms: string[],
+  asyncRoutes: RouteRecordRaw[],
+) => {
+  // 0. 管理员
+  if (firstRoutePerms.includes('*')) {
+    return [...asyncRoutes]
+  }
+  // 1. 根据一级路由过滤
+  const firstRoutes = asyncRoutes.filter((ele: RouteRecordRaw) => {
+    return firstRoutePerms.includes(ele.meta!.permission!)
+  })
+  // 2. 根据二级路由过滤
+  const lastRoutes = firstRoutes.map((item: RouteRecordRaw) => {
+    return {
+      ...item,
+      children: item!.children!.filter((obj) => secondRoutePerms.includes(obj.meta!.permission!)),
+    }
+  })
+  return lastRoutes
 }

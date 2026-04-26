@@ -2,15 +2,20 @@
 import { computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import SliderBarItem from './SliderBarItem.vue'
+import { useMenuStore } from '@/stores/menu'
 
 const route = useRoute()
 const defaultActive = computed(() => {
   return route.meta.activePath ? route.meta.activePath : route.path
 })
 
-const router = useRouter()
+const menuStore = useMenuStore()
+/**
+ * Q: 为什么这个地方要用计算属性?
+ * A: 有缓存, 计算属性依赖的数据发生变化, 计算属性会重新计算
+ */
 const routes = computed(() => {
-  return router.options.routes
+  return menuStore.menuList
 })
 </script>
 
