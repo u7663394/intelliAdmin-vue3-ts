@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { getTreeListAPI } from '@/apis/system'
+import { createRoleUserAPI, getTreeListAPI } from '@/apis/system'
 import type { RoleData } from '@/types/system'
 import { ElMessage, ElTree } from 'element-plus'
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 /**
  * 步骤增加与减少
@@ -72,6 +73,16 @@ getTreeList()
  * 第三步: 禁用树组件, 展示已选权限
  */
 const diabledTreeRef = ref<InstanceType<typeof ElTree>[]>()
+
+/**
+ * 确认添加
+ */
+const router = useRouter()
+const confirmAdd = async () => {
+  await createRoleUserAPI(roleForm.value)
+  ElMessage.success('角色添加成功')
+  router.back()
+}
 </script>
 
 <template>
@@ -153,7 +164,7 @@ const diabledTreeRef = ref<InstanceType<typeof ElTree>[]>()
       <div class="btn-container">
         <el-button v-if="activeStep > 0" @click="decreseStep">上一步</el-button>
         <el-button v-if="activeStep < 2" type="primary" @click="increseStep">下一步</el-button>
-        <el-button v-if="activeStep === 2" type="primary">确认添加</el-button>
+        <el-button v-if="activeStep === 2" type="primary" @click="confirmAdd">确认添加</el-button>
       </div>
     </footer>
   </div>

@@ -29,3 +29,9 @@ export interface RoleUser {
   name: string
   userName: string
 }
+
+export interface RoleParams {
+  perms: Array<number[]>
+  remark: string
+  roleName: string
+}

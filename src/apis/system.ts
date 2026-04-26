@@ -1,4 +1,4 @@
-import type { Role, RoleData, RoleDetail, RoleUserData } from '@/types/system'
+import type { Role, RoleData, RoleDetail, RoleParams, RoleUserData } from '@/types/system'
 import { request } from '@/utils/reuqest'
 
 // 获取角色列表
@@ -19,4 +19,9 @@ export const getRoleDetailAPI = (roleId: number) => {
 // 获取角色成员
 export const getRoleUserAPI = (roleId: number) => {
   return request<RoleUserData>(`/park/sys/roleUser/${roleId}`)
+}
+
+// 添加角色成员
+export const createRoleUserAPI = (data: RoleParams) => {
+  return request('/park/sys/role', 'POST', data)
 }
