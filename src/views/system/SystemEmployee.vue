@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { createEmployeeAPI, getEmployeeListAPI } from '@/apis/employee'
+import { createEmployeeAPI, delEmployeeAPI, getEmployeeListAPI } from '@/apis/employee'
 import { getRoleListAPI } from '@/apis/system'
 import type { Employee, EmployeeParams } from '@/types/employee'
 import type { Role } from '@/types/system'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { ref } from 'vue'
 
 /**
@@ -79,6 +79,23 @@ const confirmAdd = async () => {
   // 4. 清空旧表单
   addFormRef.value.resetFields()
 }
+
+/**
+ * 删除员工
+ */
+const delEmployee = async (id: string) => {
+  // 1. 确认框
+  await ElMessageBox.confirm('删除员工后将不可恢复, 确认删除吗?', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+  // 2. 调接口
+  await delEmployeeAPI(id)
+  /// 3. 提示 + 刷新列表
+  ElMessage.success('删除成功')
+  getEmployeeList()
+}
 </script>
 
 <template>
@@ -107,9 +124,9 @@ const confirmAdd = async () => {
         </el-table-column>
         <el-table-column align="center" label="添加时间" prop="createTime" width="200" />
         <el-table-column align="center" label="操作" fixed="right" width="220">
-          <template #default>
+          <template #default="{ row }">
             <el-button size="small" type="text">编辑</el-button>
-            <el-button size="small" type="text">删除</el-button>
+            <el-button size="small" type="text" @click="delEmployee(row.id)">删除</el-button>
             <el-button size="small" type="text">重置密码</el-button>
           </template>
         </el-table-column>

@@ -10,3 +10,8 @@ export const getEmployeeListAPI = (params: EmployeeParams) => {
 export const createEmployeeAPI = (data: Employee) => {
   return request('/park/sys/user', 'POST', data)
 }
+
+// 删除员工接口
+export const delEmployeeAPI = (id: string) => {
+  return request(`/park/sys/user/${id}`, 'DELETE')
+}
