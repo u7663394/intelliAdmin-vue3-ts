@@ -287,7 +287,12 @@ const outRent = async (rentId: string, rowId: string) => {
       <el-button :loading="searchLoading" type="primary" @click="onSearch">查询</el-button>
     </div>
     <div class="create-container">
-      <el-button type="primary" @click="$router.push('/enterpriseAdd')">添加企业</el-button>
+      <el-button
+        type="primary"
+        @click="$router.push('/enterpriseAdd')"
+        v-auth="'park:enterprise:add_edit'"
+        >添加企业</el-button
+      >
     </div>
     <!-- 表格区域 -->
     <div class="table" v-loading="searchLoading">
