@@ -131,17 +131,17 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/enterpriseAdd',
     component: () => import('@/views/park/AddEnterprise.vue'),
-    meta: { title: '企业管理' },
+    meta: { hidden: true, title: '企业管理' },
   },
   {
     path: '/enterpriseDetail',
     component: () => import('@/views/park/EnterpriseDetail.vue'),
-    meta: { title: '企业详情' },
+    meta: { hidden: true, title: '企业详情' },
   },
   {
     path: '/roleAdd',
     component: () => import('@/views/system/AddRole.vue'),
-    meta: { title: '操作角色' },
+    meta: { hidden: true, title: '操作角色' },
   },
   {
     path: '/:pathMatch(.*)*',
