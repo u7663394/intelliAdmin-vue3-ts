@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { getTreeListAPI } from '@/apis/system'
 import type { RoleData } from '@/types/system'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElTree } from 'element-plus'
 import { ref } from 'vue'
 
 /**
@@ -36,6 +36,10 @@ const increseStep = async () => {
     }
   }
   activeStep.value++
+  // 展示已选权限
+  diabledTreeRef.value!.forEach((tree, index) => {
+    tree.setCheckedKeys(roleForm.value.perms[index])
+  })
 }
 
 /**
@@ -63,6 +67,11 @@ const getTreeList = async () => {
   treeList.value = res.data
 }
 getTreeList()
+
+/**
+ * 第三步: 禁用树组件, 展示已选权限
+ */
+const diabledTreeRef = ref<InstanceType<typeof ElTree>[]>()
 </script>
 
 <template>
@@ -117,7 +126,27 @@ getTreeList()
       </div>
       <div v-show="activeStep === 2" class="form-container">
         <div class="title">检查并完成</div>
-        <div class="form">检查并完成内容</div>
+        <div class="form">
+          <div class="info">
+            <div class="form-item">角色名称：{{ roleForm.roleName }}</div>
+            <div class="form-item">角色描述：{{ roleForm.remark }}</div>
+            <div class="form-item">角色权限：</div>
+            <div class="tree-wrapper">
+              <div v-for="item in treeList" :key="item.id" class="tree-item">
+                <div class="tree-title">{{ item.title }}</div>
+                <el-tree
+                  ref="diabledTreeRef"
+                  :data="item.children"
+                  show-checkbox
+                  default-expand-all
+                  node-key="id"
+                  :highlight-current="false"
+                  :props="{ label: 'title', disabled: () => true }"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
     <footer class="add-footer">
