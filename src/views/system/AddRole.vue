@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { getTreeListAPI } from '@/apis/system'
+import type { RoleData } from '@/types/system'
 import { ElMessage } from 'element-plus'
 import { ref } from 'vue'
 
@@ -18,23 +20,49 @@ const increseStep = async () => {
   if (activeStep.value === 2) {
     return ElMessage.warning('已经是最后一步了')
   }
-  await roleFormRef.value.validate()
+  if (activeStep.value === 0) {
+    await roleFormRef.value.validate()
+  }
+  if (activeStep.value === 1) {
+    // 先置空: 防止累加
+    roleForm.value.perms = []
+    // 获取所有树组件的选中项
+    treeRef.value!.forEach((ele: any) => {
+      roleForm.value.perms.push(ele.getCheckedKeys())
+    })
+    // 如果没有选中, 提示
+    if (roleForm.value.perms.flat().length === 0) {
+      return ElMessage.warning('请至少选择一个权限')
+    }
+  }
   activeStep.value++
 }
 
 /**
- * 角色信息表单数据
+ * 第一步: 角色信息表单数据
  */
 const roleFormRef = ref()
 
 const roleForm = ref({
   roleName: '',
   remark: '',
+  perms: [] as any[],
 })
 
 const roleRules = ref({
   roleName: [{ required: true, message: '请输入角色名称', trigger: 'blur' }],
 })
+
+/**
+ * 第二步: 权限树数据
+ */
+const treeRef = ref()
+const treeList = ref<RoleData[]>([])
+const getTreeList = async () => {
+  const res = await getTreeListAPI()
+  treeList.value = res.data
+}
+getTreeList()
 </script>
 
 <template>
@@ -70,7 +98,22 @@ const roleRules = ref({
       </div>
       <div v-show="activeStep === 1" class="form-container">
         <div class="title">权限配置</div>
-        <div class="form">权限配置内容</div>
+        <div class="form">
+          <div class="tree-wrapper">
+            <div v-for="item in treeList" :key="item.id" class="tree-item">
+              <div class="tree-title">{{ item.title }}</div>
+              <el-tree
+                ref="treeRef"
+                :data="item.children"
+                show-checkbox
+                default-expand-all
+                node-key="id"
+                highlight-current
+                :props="{ label: 'title' }"
+              />
+            </div>
+          </div>
+        </div>
       </div>
       <div v-show="activeStep === 2" class="form-container">
         <div class="title">检查并完成</div>
