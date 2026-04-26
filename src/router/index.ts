@@ -141,7 +141,7 @@ export const routes: RouteRecordRaw[] = [
   {
     path: '/roleAdd',
     component: () => import('@/views/system/AddRole.vue'),
-    meta: { title: '添加角色' },
+    meta: { title: '操作角色' },
   },
   {
     path: '/:pathMatch(.*)*',

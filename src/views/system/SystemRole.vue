@@ -1,9 +1,17 @@
 <script setup lang="ts">
-import { getRoleDetailAPI, getRoleListAPI, getRoleUserAPI, getTreeListAPI } from '@/apis/system'
+import {
+  delRoleUserAPI,
+  getRoleDetailAPI,
+  getRoleListAPI,
+  getRoleUserAPI,
+  getTreeListAPI,
+} from '@/apis/system'
 import type { Role, RoleData, RoleUser } from '@/types/system'
 import { ref } from 'vue'
 import user from '@/assets/user.svg'
 import activeUser from '@/assets/user-active.svg'
+import { useRouter } from 'vue-router'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 /**
  * 获取角色列表 + 渲染
@@ -84,6 +92,29 @@ const getRoleUserList = async (roleId: number) => {
   const res = await getRoleUserAPI(roleId)
   roleUserList.value = res.data.rows
 }
+
+/**
+ * 编辑 + 删除角色
+ */
+const router = useRouter()
+const onCommand = async (command: string, roldId: number) => {
+  // 1. 编辑角色
+  if (command === 'edit') {
+    router.push(`/roleAdd?id=${roldId}`)
+  }
+  // 2. 删除角色
+  if (command === 'del') {
+    await ElMessageBox.confirm('是否确认删除当前角色?', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+    await delRoleUserAPI(roldId + '')
+    await getRoleList()
+    ElMessage.success('删除成功!')
+    activeIndex.value = 0
+  }
+}
 </script>
 
 <template>
@@ -103,7 +134,17 @@ const getRoleUserList = async (roleId: number) => {
           </div>
         </el-tooltip>
         <div class="more">
-          <img src="@/assets/more.svg" class="icon" />
+          <el-dropdown @command="onCommand($event, item.roleId!)">
+            <span class="el-dropdown-link">
+              <img src="@/assets/more.svg" class="icon" />
+            </span>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item command="edit">编辑角色</el-dropdown-item>
+                <el-dropdown-item command="del">删除</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
         </div>
       </div>
       <el-button class="addBtn" size="small" @click="$router.push('/roleAdd')">添加角色</el-button>

@@ -25,3 +25,13 @@ export const getRoleUserAPI = (roleId: number) => {
 export const createRoleUserAPI = (data: RoleParams) => {
   return request('/park/sys/role', 'POST', data)
 }
+
+// 删除角色成员
+export const delRoleUserAPI = (roleId: string) => {
+  return request(`/park/sys/role/${roleId}`, 'DELETE')
+}
+
+// 编辑角色成员
+export const updateRoleAPI = (data: RoleParams) => {
+  return request('/park/sys/role', 'PUT', data)
+}
