@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useMenuStore } from '@/stores/menu'
 import { useUserStore } from '@/stores/user'
 import { removeLocalToken } from '@/utils/auth'
 import { ElMessageBox } from 'element-plus'
@@ -15,6 +16,7 @@ import { useRouter } from 'vue-router'
  */
 const router = useRouter()
 const userStore = useUserStore()
+const menuStore = useMenuStore()
 const handleCommand = async (command: string) => {
   if (command === 'home') {
     // 1. 首页
@@ -31,7 +33,9 @@ const handleCommand = async (command: string) => {
     })
     // 3.2. 清空用户信息
     userStore.setToken('')
+    userStore.profile = {}
     removeLocalToken()
+    menuStore.resetMenu()
     // 3.3. 跳转到登录页
     router.push('/login')
   }
