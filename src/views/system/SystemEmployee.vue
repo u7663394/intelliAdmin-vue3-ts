@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { getEmployeeListAPI } from '@/apis/employee'
+import { createEmployeeAPI, getEmployeeListAPI } from '@/apis/employee'
+import { getRoleListAPI } from '@/apis/system'
 import type { Employee, EmployeeParams } from '@/types/employee'
-import { lo } from 'element-plus/es/locale/index.mjs'
+import type { Role } from '@/types/system'
+import { ElMessage } from 'element-plus'
 import { ref } from 'vue'
 
 /**
@@ -30,6 +32,53 @@ const pageChange = (newPage: number) => {
   params.value.page = newPage
   getEmployeeList()
 }
+
+/**
+ * 添加员工表单与弹窗
+ */
+const dialogVisible = ref(false)
+const roleList = ref<Role[]>([])
+
+const addForm = ref({
+  name: '',
+  phonenumber: '',
+  roleId: '',
+  status: 1,
+  userName: '',
+})
+
+const addFormRules = ref({
+  name: [{ required: true, message: '请输入员工姓名', trigger: 'blur' }],
+  userName: [{ required: true, message: '请输入登录账号', trigger: 'blur' }],
+  phonenumber: [{ required: true, message: '请输入联系方式', trigger: 'blur' }],
+  roleId: [{ required: true, message: '请分配角色', trigger: 'blur' }],
+  status: [{ required: true, message: '请选择员工状态', trigger: 'blur' }],
+})
+
+/**
+ * 添加员工
+ */
+const addEmployee = async () => {
+  dialogVisible.value = true
+  const res = await getRoleListAPI()
+  roleList.value = res.data
+}
+
+/**
+ * 确认添加
+ */
+const addFormRef = ref()
+const confirmAdd = async () => {
+  // 1. 调用接口
+  await createEmployeeAPI(addForm.value)
+  ElMessage.success('添加成功')
+  // 2. 关闭弹框
+  dialogVisible.value = false
+  // 3. 重新获取列表
+  getEmployeeList()
+  // 4. 清空旧表单
+  addFormRef.value.resetFields()
+}
 </script>
 
 <template>
@@ -41,7 +90,7 @@ const pageChange = (newPage: number) => {
       <el-button type="primary">查询</el-button>
     </div>
     <div class="create-container">
-      <el-button type="primary">添加员工</el-button>
+      <el-button type="primary" @click="addEmployee">添加员工</el-button>
     </div>
     <!-- 表格区域 -->
     <div class="table" v-loading="loading">
@@ -75,6 +124,47 @@ const pageChange = (newPage: number) => {
       />
     </div>
     <!-- 添加员工 -->
+    <el-dialog
+      title="添加员工"
+      width="480px"
+      v-model="dialogVisible"
+      @close="dialogVisible = false"
+    >
+      <!-- 表单接口 -->
+      <div class="form-container">
+        <el-form ref="addFormRef" :model="addForm" :rules="addFormRules" label-width="80px">
+          <el-form-item label="员工姓名" prop="name">
+            <el-input v-model="addForm.name" />
+          </el-form-item>
+          <el-form-item label="登录账号" prop="userName">
+            <el-input v-model="addForm.userName" />
+          </el-form-item>
+          <el-form-item label="联系方式" prop="phonenumber">
+            <el-input v-model="addForm.phonenumber" />
+          </el-form-item>
+          <el-form-item label="分配角色" prop="roleId">
+            <el-select v-model="addForm.roleId" placeholder="请选择角色">
+              <el-option
+                v-for="item in roleList"
+                :key="item.roleId"
+                :label="item.roleName"
+                :value="item.roleId!"
+              />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="员工状态" prop="status">
+            <el-radio-group v-model="addForm.status">
+              <el-radio :label="0">禁用</el-radio>
+              <el-radio :label="1">启用</el-radio>
+            </el-radio-group>
+          </el-form-item>
+        </el-form>
+      </div>
+      <template #footer>
+        <el-button size="small" @click="dialogVisible = false">取 消</el-button>
+        <el-button size="small" type="primary" @click="confirmAdd">确 定</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 

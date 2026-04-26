@@ -10,11 +10,11 @@ export interface EmployeeData {
 }
 
 export interface Employee {
-  id: number
+  id?: number
   name: string
   phonenumber: string
-  roleId: number
-  roleName: string
+  roleId: number | string
+  roleName?: string
   status: number
   userName: string
 }
