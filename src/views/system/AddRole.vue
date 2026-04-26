@@ -1,4 +1,41 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { ElMessage } from 'element-plus'
+import { ref } from 'vue'
+
+/**
+ * 步骤增加与减少
+ */
+const activeStep = ref(0)
+
+const decreseStep = () => {
+  if (activeStep.value === 0) {
+    return ElMessage.warning('已经是第一步了')
+  }
+  activeStep.value--
+}
+
+const increseStep = async () => {
+  if (activeStep.value === 2) {
+    return ElMessage.warning('已经是最后一步了')
+  }
+  await roleFormRef.value.validate()
+  activeStep.value++
+}
+
+/**
+ * 角色信息表单数据
+ */
+const roleFormRef = ref()
+
+const roleForm = ref({
+  roleName: '',
+  remark: '',
+})
+
+const roleRules = ref({
+  roleName: [{ required: true, message: '请输入角色名称', trigger: 'blur' }],
+})
+</script>
 
 <template>
   <div class="add-role">
@@ -12,29 +49,39 @@
           1. active: 当前高亮步骤
           2. direction: 步骤展示方向
         -->
-        <el-steps direction="vertical" :active="1">
+        <el-steps direction="vertical" :active="activeStep">
           <el-step title="角色信息" />
           <el-step title="权限信息" />
           <el-step title="检查并完成" />
         </el-steps>
       </div>
-      <div class="form-container">
+      <div v-show="activeStep === 0" class="form-container">
         <div class="title">角色信息</div>
-        <div class="form">角色信息内容</div>
+        <div class="form">
+          <el-form ref="roleFormRef" class="form-box" :model="roleForm" :rules="roleRules">
+            <el-form-item label="角色名称" prop="roleName">
+              <el-input v-model="roleForm.roleName" />
+            </el-form-item>
+            <el-form-item label="角色描述">
+              <el-input v-model="roleForm.remark" />
+            </el-form-item>
+          </el-form>
+        </div>
       </div>
-      <div class="form-container">
+      <div v-show="activeStep === 1" class="form-container">
         <div class="title">权限配置</div>
         <div class="form">权限配置内容</div>
       </div>
-      <div class="form-container">
+      <div v-show="activeStep === 2" class="form-container">
         <div class="title">检查并完成</div>
         <div class="form">检查并完成内容</div>
       </div>
     </main>
     <footer class="add-footer">
       <div class="btn-container">
-        <el-button>上一步</el-button>
-        <el-button type="primary">下一步</el-button>
+        <el-button v-if="activeStep > 0" @click="decreseStep">上一步</el-button>
+        <el-button v-if="activeStep < 2" type="primary" @click="increseStep">下一步</el-button>
+        <el-button v-if="activeStep === 2" type="primary">确认添加</el-button>
       </div>
     </footer>
   </div>
